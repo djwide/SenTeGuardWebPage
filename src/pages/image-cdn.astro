@@ -1,11 +1,11 @@
 ---
 import { Image } from 'astro:assets';
-import corgi from '../assets/corgi.svg';
+import goBoard from '../assets/go-board.png';
 import Diff from '../components/Diff.astro';
 import Markdown from '../components/Markdown.astro';
 import Layout from '../layouts/Layout.astro';
 
-const sampleImage = '/images/corgi.svg';
+const sampleImage = '/images/go-board.png';
 
 const forceWebP = process.env.NODE_ENV = "development";
 const sampleImageSrcSet = [640, 1280, 2048]
@@ -23,10 +23,10 @@ Astro's \`Image\` component will automatically use Netlify Image CDN to serve op
 ~~~jsx
 ---
 import { Image } from 'astro:assets';
-import corgi from '../assets/corgi.svg';
+import goBoard from '../assets/go-board.png';
 ---
 // Later in your markup...
-<Image src={corgi} alt="Corgi" /* ... additional props */ />
+<Image src={goBoard} alt="Go board" /* ... additional props */ />
 ~~~
 `;
 
@@ -38,13 +38,13 @@ Note that aside from Astro's \`Image\` or rolling your own \`<img>\` tags, you c
 
 ~~~jsx
 // <== On the left, the original image
-    <img src="/images/corgi.svg" alt="Corgi" />
+    <img src="/images/go-board.png" alt="Go board" />
 
 // ==> On the right, explicitly using Netlify Image CDN endpoint for a responsive image
 <img 
   srcSet="${sampleImageSrcSet}"
   sizes="${sizes}" 
-  alt="Corgi" 
+  alt="Go board" 
 />
 ~~~
 `;
@@ -63,11 +63,8 @@ detection, so format is set to WebP.
         <section>
             <Markdown content={astroImageSnippet} class="mb-8" />
             <figure>
-                <Image src={corgi} alt="Corgi" class="border-2 border-white rounded-lg" />
-                <figcaption class="mt-2 text-sm italic">
-                    Credit: photo by <a href="https://unsplash.com/@alvannee">Alvan Nee</a> on
-                    <a href="https://unsplash.com/photos/long-coated-white-and-brown-dog-lvFlpqEvuRM"> Unsplash </a>
-                </figcaption>
+                <Image src={goBoard} alt="Go board" class="border-2 border-white rounded-lg" />
+                <figcaption class="mt-2 text-sm italic">Example go board image delivered via CDN</figcaption>
             </figure>
         </section>
         <section>
@@ -77,7 +74,7 @@ detection, so format is set to WebP.
                     <div>
                         <div class="relative">
                             <span class="hidden absolute py-1.5 px-2.5 text-sm rounded-md bg-gray-900/70 top-2.5 left-2.5"></span>
-                            <img src={sampleImage} alt="Corgi" />
+                            <img src={sampleImage} alt="Go board" />
                         </div>
                     </div>
                 </Fragment>
@@ -86,7 +83,7 @@ detection, so format is set to WebP.
                         <div class="relative">
                             <span class="hidden absolute py-1.5 px-2.5 text-sm rounded-md bg-gray-900/70 top-2.5 right-2.5"></span>
 
-                            <img srcset={sampleImageSrcSet} alt="Corgi" />
+                            <img srcset={sampleImageSrcSet} alt="Go board" />
                         </div>
                     </div>
                 </Fragment>
