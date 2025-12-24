@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">Founder portrait placeholder</title>
+  <desc id="desc">Minimal silhouette portrait</desc>
+  <rect width="240" height="240" rx="120" fill="#111827" />
+  <circle cx="120" cy="90" r="48" fill="#f9fafb" />
+  <path d="M48 210c16-44 56-66 72-66s56 22 72 66" fill="#f9fafb" />
+</svg>
