@@ -1,30 +1,14 @@
 ---
 import Logo from '../components/Logo.astro';
-
-const navItems = [
-    { linkText: 'Home', href: '/' },
-    { linkText: 'Revalidation', href: '/revalidation' },
-    { linkText: 'Image CDN', href: '/image-cdn' },
-    { linkText: 'Edge Function', href: '/edge' },
-    { linkText: 'Blobs', href: '/blobs' }
-];
 ---
 
-<nav class="flex flex-wrap items-center gap-4 pt-6 pb-16 sm:pt-12 sm:pb-24">
-    <a href="/">
-        <Logo />
+<header class="flex flex-col items-center gap-6 py-8">
+    <a href="/" aria-label="SenTeGuard home" class="inline-flex items-center justify-center">
+        <Logo class="h-20 sm:h-24" />
     </a>
-    {
-        !!navItems?.length && (
-            <ul class="flex flex-wrap gap-x-4 gap-y-1">
-                {navItems.map((item) => (
-                    <li>
-                        <a href={item.href} class="inline-block px-1.5 py-1 sm:px-3 sm:py-2">
-                            {item.linkText}
-                        </a>
-                    </li>
-                ))}
-            </ul>
-        )
-    }
-</nav>
+    <nav class="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-300">
+        <a href="/blog/" class="px-3 py-1">Blog</a>
+        <a href="/#founder" class="px-3 py-1">Founder</a>
+        <a href="/#services" class="px-3 py-1">Services</a>
+    </nav>
+</header>

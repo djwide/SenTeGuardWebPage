@@ -1,16 +1,16 @@
 ---
 import { Image } from 'astro:assets';
-import corgi from '../assets/corgi.jpg';
+import corgi from '../assets/corgi.svg';
 import Diff from '../components/Diff.astro';
 import Markdown from '../components/Markdown.astro';
 import Layout from '../layouts/Layout.astro';
 
-const sampleImage = '/images/corgi.jpg';
+const sampleImage = '/images/corgi.svg';
 
 const forceWebP = process.env.NODE_ENV = "development";
 const sampleImageSrcSet = [640, 1280, 2048]
     .map((size) => {
-        return `/.netlify/images?url=${sampleImage}&w=${size}${forceWebP ? '&fm=webp' : ''} ${size}w`;
+            return `/.netlify/images?url=${sampleImage}&w=${size}${forceWebP ? '&fm=webp' : ''} ${size}w`;
     })
     .join(', ');
 const sizes = '(max-width: 1024px) 100vw, 1024px';
@@ -23,7 +23,7 @@ Astro's \`Image\` component will automatically use Netlify Image CDN to serve op
 ~~~jsx
 ---
 import { Image } from 'astro:assets';
-import corgi from '../assets/corgi.jpg';
+import corgi from '../assets/corgi.svg';
 ---
 // Later in your markup...
 <Image src={corgi} alt="Corgi" /* ... additional props */ />
@@ -38,7 +38,7 @@ Note that aside from Astro's \`Image\` or rolling your own \`<img>\` tags, you c
 
 ~~~jsx
 // <== On the left, the original image
-<img src="/images/corgi.jpg" alt="Corgi" />
+    <img src="/images/corgi.svg" alt="Corgi" />
 
 // ==> On the right, explicitly using Netlify Image CDN endpoint for a responsive image
 <img 
