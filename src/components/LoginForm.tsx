@@ -116,9 +116,8 @@ export default function LoginForm({ redirectTo = '/' }: LoginFormProps) {
             <div className="flex flex-wrap items-center gap-3 text-sm">
                 <button
                     type="button"
-                    className={`rounded-full border px-3 py-1 ${
-                        mode === 'signin' ? 'border-primary text-primary' : 'border-gray-700 text-gray-300'
-                    }`}
+                    className={`rounded-full border px-3 py-1 ${mode === 'signin' ? 'border-primary text-primary' : 'border-gray-700 text-gray-300'
+                        }`}
                     onClick={() => setMode('signin')}
                     disabled={loading}
                 >
@@ -126,9 +125,8 @@ export default function LoginForm({ redirectTo = '/' }: LoginFormProps) {
                 </button>
                 <button
                     type="button"
-                    className={`rounded-full border px-3 py-1 ${
-                        mode === 'signup' ? 'border-primary text-primary' : 'border-gray-700 text-gray-300'
-                    }`}
+                    className={`rounded-full border px-3 py-1 ${mode === 'signup' ? 'border-primary text-primary' : 'border-gray-700 text-gray-300'
+                        }`}
                     onClick={() => setMode('signup')}
                     disabled={loading}
                 >
@@ -167,9 +165,36 @@ export default function LoginForm({ redirectTo = '/' }: LoginFormProps) {
             </form>
 
             <div className="space-y-3">
-                <button className="btn btn-outline w-full" type="button" onClick={handleGoogleSignin} disabled={loading}>
-                    Continue with Google
-                </button>
+                <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-300">Continue with</span>
+                    <button
+                        className="btn btn-outline px-3 py-2"
+                        type="button"
+                        onClick={handleGoogleSignin}
+                        disabled={loading}
+                        aria-label="Continue with Google"
+                        title="Continue with Google"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 533.5 544.3" className="h-5 w-5">
+                            <path
+                                fill="#4285f4"
+                                d="M533.5 278.4c0-18.5-1.5-32-4.7-46H272.1v87h149c-3 21.7-19.3 54.4-55.6 76.3l-.5 3.3 80.7 62.5 5.6.6c51.3-47.3 81.2-117 81.2-183.7"
+                            />
+                            <path
+                                fill="#34a853"
+                                d="M272.1 544.3c73.5 0 135.3-24.1 180.4-65.6l-86.1-66.6c-23.2 15-54.4 25.5-94.3 25.5-71.9 0-132.8-47.3-154.5-112.7l-3.2.3-84.3 65.3-1.1 3.1C72.7 480.7 165.4 544.3 272.1 544.3"
+                            />
+                            <path
+                                fill="#fbbc04"
+                                d="M117.6 325c-5.8-17.5-9.2-36.3-9.2-55.5 0-19.2 3.4-38 9-55.5l-.2-3.7-85-66-2.8 1.3C13.6 192 0 232 0 273.6c0 41.6 13.6 81.6 29.4 112l88.2-60.6"
+                            />
+                            <path
+                                fill="#ea4335"
+                                d="M272.1 109.7c51.1 0 85.6 22.1 105.3 40.6l76.9-74.8C407.1 28.5 345.6 0 272.1 0 165.4 0 72.7 63.6 29.4 161l88.2 60.6c21.8-65.4 82.7-111.9 154.5-111.9"
+                            />
+                        </svg>
+                    </button>
+                </div>
                 {user && (
                     <button className="btn btn-outline w-full" type="button" onClick={handleSignOut} disabled={loading}>
                         Sign out

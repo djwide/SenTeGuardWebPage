@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Free Demo | SenTeGuard">
+    <section class="section-spacing max-w-5xl mx-auto space-y-8">
+        <div class="space-y-3">
+            <p class="text-sm uppercase tracking-[0.3em] text-gray-500">Free Demo</p>
+            <h1>Experience SenTeGuard</h1>
+            <p class="max-w-3xl">
+                Watch the walkthrough and grab the demo build. The download link will be added here shortly; the video
+                below gives you a tour in the meantime.
+            </p>
+        </div>
+
+        <div class="card space-y-4">
+            <h2 class="text-xl text-white">Download</h2>
+            <p class="text-sm text-gray-300">Download link coming soon.</p>
+            <a class="btn w-full sm:w-auto" href="#" aria-disabled="true" tabindex="-1">Download (soon)</a>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="text-xl text-white">Product Walkthrough</h2>
+            <div class="aspect-video w-full overflow-hidden rounded-xl border border-gray-800 bg-black">
+                <iframe
+                    src="https://www.youtube.com/embed/bzDiaMnZcdE"
+                    title="SenTeGuard Demo"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    class="h-full w-full"
+                ></iframe>
+            </div>
+        </div>
+    </section>
+</Layout>
+
