@@ -1,0 +1,18 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LoginForm from '../components/LoginForm';
+---
+
+<Layout title="Login | SenTeGuard">
+    <section class="section-spacing max-w-3xl mx-auto space-y-6">
+        <div class="space-y-3">
+            <h1>Access Your Account</h1>
+            <p>
+                Sign in with email/password or Google. Comments require a logged in account, while publishing blog posts
+                stays restricted to the admin user.
+            </p>
+        </div>
+        <LoginForm client:load />
+    </section>
+</Layout>
+

@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import CommentSection from '../../components/CommentSection';
 ---
 
 <Layout title="SenTeGuard Blog">
@@ -18,7 +19,7 @@ import Layout from '../../layouts/Layout.astro';
                     new entries, while readers are welcome to share comments below.
                 </p>
                 <div class="pt-2">
-                    <p class="text-sm text-gray-500">Drafted by SenTeGuard Team</p>
+                    <p class="text-sm text-gray-500">Drafted by SenTeGuard Team · Publishing restricted to admin</p>
                 </div>
             </div>
         </div>
@@ -28,34 +29,15 @@ import Layout from '../../layouts/Layout.astro';
         <div class="grid gap-8 lg:grid-cols-[1fr_1.1fr]">
             <div class="space-y-3">
                 <h2>Reader Comments</h2>
-                <p>Share your thoughts using the alias you prefer. Comments are reviewed before posting.</p>
+                <p>
+                    Share your thoughts using the alias you prefer. Comments are reviewed before posting and require a
+                    logged-in account.
+                </p>
+                <p class="text-xs text-gray-500">
+                    Blog publishing remains limited to the admin account configured in Firebase.
+                </p>
             </div>
-            <form
-                class="card space-y-4"
-                action="mailto:david@senteguard.com"
-                method="post"
-                enctype="text/plain"
-            >
-                <label class="flex flex-col gap-2 text-sm text-gray-400">
-                    Alias
-                    <input
-                        type="text"
-                        name="alias"
-                        required
-                        class="rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
-                    />
-                </label>
-                <label class="flex flex-col gap-2 text-sm text-gray-400">
-                    Comment
-                    <textarea
-                        name="comment"
-                        rows="5"
-                        required
-                        class="rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
-                    ></textarea>
-                </label>
-                <button class="btn" type="submit">Submit Comment</button>
-            </form>
+            <CommentSection client:load />
         </div>
     </section>
 </Layout>
