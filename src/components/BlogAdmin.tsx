@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { FirebaseError } from 'firebase/app';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, firebaseReady } from '../lib/firebaseClient';
 import { db } from '../lib/firestoreClient';
@@ -74,7 +75,13 @@ export default function BlogAdmin() {
             setTitle('');
             setBody('');
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unable to publish post.');
+            if (err instanceof FirebaseError && err.code === 'permission-denied') {
+                setError(
+                    'Permission denied. Ensure Firestore rules allow the admin email and you are signed in as that admin.'
+                );
+            } else {
+                setError(err instanceof Error ? err.message : 'Unable to publish post.');
+            }
         } finally {
             setLoading(false);
         }

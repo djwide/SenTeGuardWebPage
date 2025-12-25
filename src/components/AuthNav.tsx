@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth, firebaseReady } from '../lib/firebaseClient';
+import { isAdmin } from '../utils/auth';
 
 export default function AuthNav() {
     const [user, setUser] = useState<User | null>(null);
     const [checking, setChecking] = useState(true);
+    const [admin, setAdmin] = useState(false);
 
     useEffect(() => {
         if (!auth) {
@@ -14,6 +16,7 @@ export default function AuthNav() {
 
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
+            setAdmin(isAdmin(currentUser));
             setChecking(false);
         });
 
@@ -46,6 +49,11 @@ export default function AuthNav() {
 
     return user ? (
         <div className="flex items-center gap-3">
+            {admin && (
+                <a href="/blog/admin" className="px-3 py-1 text-sm text-gray-200 underline decoration-transparent hover:decoration-current">
+                    Admin
+                </a>
+            )}
             <span className="text-sm text-gray-300">Hi, {displayName}</span>
             <button type="button" className="btn btn-outline" onClick={handleLogout}>
                 Logout
