@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import CommentSection from '../../components/CommentSection';
+import PostsList from '../../components/PostsList';
 ---
 
 <Layout title="SenTeGuard Blog">
@@ -12,32 +12,23 @@ import CommentSection from '../../components/CommentSection';
                 and moderated to keep the focus on cognitive security.
             </p>
             <div class="card space-y-3">
-                <p class="text-sm uppercase tracking-[0.3em] text-gray-500">Latest Post</p>
-                <h2 class="text-2xl text-white">Launching the Cognitive Security Mission</h2>
+                <p class="text-sm uppercase tracking-[0.3em] text-gray-500">Latest Updates</p>
+                <h2 class="text-2xl text-white">Cognitive Security Mission</h2>
                 <p>
-                    This space is reserved for longform posts authored by SenTeGuard. Only authorized team members publish
-                    new entries, while readers are welcome to share comments below.
+                    Posts are published by the SenTeGuard team. Publishing is restricted to the admin account, while
+                    reader comments require sign-in.
                 </p>
                 <div class="pt-2">
-                    <p class="text-sm text-gray-500">Drafted by SenTeGuard Team · Publishing restricted to admin</p>
+                    <p class="text-sm text-gray-500">Publishing restricted to admin · Comments require login</p>
                 </div>
             </div>
         </div>
     </section>
 
     <section class="section-spacing border-t border-gray-900">
-        <div class="grid gap-8 lg:grid-cols-[1fr_1.1fr]">
-            <div class="space-y-3">
-                <h2>Reader Comments</h2>
-                <p>
-                    Share your thoughts using the alias you prefer. Comments are reviewed before posting and require a
-                    logged-in account.
-                </p>
-                <p class="text-xs text-gray-500">
-                    Blog publishing remains limited to the admin account configured in Firebase.
-                </p>
-            </div>
-            <CommentSection client:load />
+        <div class="space-y-6">
+            <h2>Posts</h2>
+            <PostsList client:load />
         </div>
     </section>
 </Layout>
