@@ -11,12 +11,7 @@ import Layout from '../layouts/Layout.astro';
                 persistent visibility, and dependable compliance workflows.
             </p>
             <div class="space-y-3">
-                <form
-                    class="flex flex-col gap-3 sm:flex-row sm:items-center"
-                    action="mailto:david@senteguard.com"
-                    method="post"
-                    enctype="text/plain"
-                >
+                <form class="space-y-3" action="/api/subscribe" method="post" id="subscribe-form">
                     <label class="flex-1 text-sm text-gray-300">
                         Join our email list
                         <input
@@ -27,11 +22,12 @@ import Layout from '../layouts/Layout.astro';
                             class="mt-2 w-full rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
                         />
                     </label>
-                    <button class="btn sm:w-auto" type="submit">Join</button>
+                    <div class="flex flex-wrap gap-3">
+                        <button class="btn" type="submit" id="subscribe-submit">Join</button>
+                        <a class="btn btn-lg" href="mailto:david@senteguard.com">Request a Demo</a>
+                    </div>
                 </form>
-                <div>
-                    <a class="btn btn-lg" href="mailto:david@senteguard.com">Request a Demo</a>
-                </div>
+                <p id="subscribe-message" class="text-sm text-gray-400"></p>
             </div>
         </div>
     </section>
@@ -235,4 +231,49 @@ import Layout from '../layouts/Layout.astro';
             </form>
         </div>
     </section>
+
+    <script>
+        const form = document.getElementById('subscribe-form');
+        const submitBtn = document.getElementById('subscribe-submit');
+        const messageEl = document.getElementById('subscribe-message');
+
+        form?.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (!form || !submitBtn || !messageEl) return;
+
+            const formData = new FormData(form);
+            const email = formData.get('email');
+            if (!email) return;
+
+            submitBtn.disabled = true;
+            messageEl.textContent = 'Submitting...';
+            messageEl.classList.remove('text-red-400', 'text-green-400');
+            messageEl.classList.add('text-gray-400');
+
+            try {
+                const response = await fetch('/api/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (response.ok) {
+                    messageEl.textContent = 'Thanks! You are subscribed.';
+                    messageEl.classList.remove('text-gray-400', 'text-red-400');
+                    messageEl.classList.add('text-green-400');
+                    form.reset();
+                } else {
+                    messageEl.textContent = data.error || 'Unable to subscribe. Please try again.';
+                    messageEl.classList.remove('text-gray-400', 'text-green-400');
+                    messageEl.classList.add('text-red-400');
+                }
+            } catch (error) {
+                messageEl.textContent = 'Network error. Please try again.';
+                messageEl.classList.remove('text-gray-400', 'text-green-400');
+                messageEl.classList.add('text-red-400');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
 </Layout>
