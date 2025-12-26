@@ -3,6 +3,8 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import {
     addDoc,
     collection,
+    deleteDoc,
+    doc,
     onSnapshot,
     orderBy,
     query,
@@ -11,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { auth, firebaseReady } from '../lib/firebaseClient';
 import { db } from '../lib/firestoreClient';
+import { isAdmin } from '../utils/auth';
 
 type Comment = {
     id: string;
@@ -33,6 +36,8 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [admin, setAdmin] = useState(false);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
 
     const commentsRef = useMemo(() => {
         if (!db) return null;
@@ -47,6 +52,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
 
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
+            setAdmin(isAdmin(currentUser));
             setChecking(false);
         });
 
@@ -119,6 +125,19 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         }
     };
 
+    const handleDelete = async (commentId: string) => {
+        if (!admin || !commentsRef) return;
+        setDeletingId(commentId);
+        setError('');
+        try {
+            await deleteDoc(doc(commentsRef, commentId));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unable to delete comment.');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     return (
         <div className="space-y-4">
             {!user ? (
@@ -175,9 +194,21 @@ export default function CommentSection({ postId }: CommentSectionProps) {
                     <ul className="space-y-3">
                         {comments.map((comment) => (
                             <li key={comment.id} className="rounded-lg border border-gray-800 bg-neutral-950/70 p-3">
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                    <span className="text-sm text-white">{comment.alias}</span>
-                                    <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="flex flex-col">
+                                        <span className="text-sm text-white">{comment.alias}</span>
+                                        <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+                                    </div>
+                                    {admin && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline text-xs"
+                                            onClick={() => handleDelete(comment.id)}
+                                            disabled={deletingId === comment.id}
+                                        >
+                                            {deletingId === comment.id ? 'Deleting...' : 'Delete'}
+                                        </button>
+                                    )}
                                 </div>
                                 <p className="mt-2 text-sm text-gray-200">{comment.text}</p>
                             </li>
