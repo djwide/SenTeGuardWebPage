@@ -49,14 +49,15 @@ export const POST: APIRoute = async ({ request }) => {
 
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
-            const message = data.detail || 'Unable to subscribe';
+            const message = data.detail || data.title || 'Unable to subscribe';
             return new Response(JSON.stringify({ error: message }), { status: response.status });
         }
 
         return new Response(JSON.stringify({ message: 'Subscribed' }), { status: 200 });
     } catch (error) {
         console.error('Mailchimp subscribe error', error);
-        return new Response(JSON.stringify({ error: 'Subscription failed' }), { status: 500 });
+        const message = error instanceof Error ? error.message : 'Subscription failed';
+        return new Response(JSON.stringify({ error: message }), { status: 500 });
     }
 };
 
