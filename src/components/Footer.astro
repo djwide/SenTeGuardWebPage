@@ -3,5 +3,66 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="py-12 text-sm text-gray-500">
-    <p>© {year} SenTeGuard. All rights reserved.</p>
+    <div class="space-y-4">
+        <p>© {year} SenTeGuard. All rights reserved.</p>
+        <div class="space-y-2">
+            <p class="text-gray-300">Stay updated. Join our email list.</p>
+            <form class="flex flex-col gap-2 sm:flex-row sm:items-center" action="/api/subscribe" method="post" id="footer-subscribe-form">
+                <input
+                    type="email"
+                    name="email"
+                    required
+                    placeholder="you@example.com"
+                    class="w-full rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
+                />
+                <button class="btn sm:w-auto" type="submit" id="footer-subscribe-submit">Join</button>
+            </form>
+            <p id="footer-subscribe-message" class="text-xs text-gray-400"></p>
+        </div>
+    </div>
 </footer>
+
+<script>
+    const footerForm = document.getElementById('footer-subscribe-form');
+    const footerSubmit = document.getElementById('footer-subscribe-submit');
+    const footerMsg = document.getElementById('footer-subscribe-message');
+
+    footerForm?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!footerForm || !footerSubmit || !footerMsg) return;
+
+        const formData = new FormData(footerForm);
+        const email = formData.get('email');
+        if (!email) return;
+
+        footerSubmit.disabled = true;
+        footerMsg.textContent = 'Submitting...';
+        footerMsg.classList.remove('text-red-400', 'text-green-400');
+        footerMsg.classList.add('text-gray-400');
+
+        try {
+            const response = await fetch('/api/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (response.ok) {
+                footerMsg.textContent = 'Thanks! You are subscribed.';
+                footerMsg.classList.remove('text-gray-400', 'text-red-400');
+                footerMsg.classList.add('text-green-400');
+                footerForm.reset();
+            } else {
+                footerMsg.textContent = data.error || 'Unable to subscribe. Please try again.';
+                footerMsg.classList.remove('text-gray-400', 'text-green-400');
+                footerMsg.classList.add('text-red-400');
+            }
+        } catch (error) {
+            footerMsg.textContent = 'Network error. Please try again.';
+            footerMsg.classList.remove('text-gray-400', 'text-green-400');
+            footerMsg.classList.add('text-red-400');
+        } finally {
+            footerSubmit.disabled = false;
+        }
+    });
+</script>
