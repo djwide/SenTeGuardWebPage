@@ -130,7 +130,7 @@ export default function PostsList() {
         const nextValue =
             value.slice(0, selectionStart) + before + selected + insertAfter + value.slice(selectionEnd);
         setEditBody(nextValue);
-        const nextPos = selectionEnd + before.length + insertAfter.length;
+        const nextPos = selectionStart + before.length + selected.length + insertAfter.length;
         requestAnimationFrame(() => {
             textarea.focus();
             textarea.setSelectionRange(nextPos, nextPos);
@@ -155,7 +155,7 @@ export default function PostsList() {
             .filter(Boolean);
 
     const slugify = (value: string) =>
-        value
+        String(value ?? '')
             .toLowerCase()
             .trim()
             .replace(/[^\w\s-]/g, '')
