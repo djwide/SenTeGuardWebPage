@@ -36,6 +36,75 @@ export default function PostsList() {
     const [savingId, setSavingId] = useState<string | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+    const htmlToMarkdown = (html: string): string => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        const serialize = (node: Node, listPrefix = ''): string => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                return (node.textContent || '').replace(/\s+/g, ' ');
+            }
+
+            if (!(node instanceof HTMLElement)) {
+                return '';
+            }
+
+            const children = Array.from(node.childNodes).map((child, index) =>
+                serialize(child, node.tagName === 'OL' ? `${index + 1}. ` : listPrefix)
+            );
+            const content = children.join('').trim();
+
+            switch (node.tagName) {
+                case 'STRONG':
+                case 'B':
+                    return content ? `**${content}**` : '';
+                case 'EM':
+                case 'I':
+                    return content ? `*${content}*` : '';
+                case 'CODE':
+                    return content ? '`' + content + '`' : '';
+                case 'A': {
+                    const href = node.getAttribute('href') || '';
+                    return href ? `[${content || href}](${href})` : content;
+                }
+                case 'BR':
+                    return '\n';
+                case 'P':
+                case 'DIV':
+                    return content ? `${content}\n\n` : '\n\n';
+                case 'H1':
+                    return `# ${content}\n\n`;
+                case 'H2':
+                    return `## ${content}\n\n`;
+                case 'H3':
+                    return `### ${content}\n\n`;
+                case 'H4':
+                    return `#### ${content}\n\n`;
+                case 'UL': {
+                    return Array.from(node.children)
+                        .map((li) => `- ${serialize(li).trim()}`)
+                        .join('\n') + '\n\n';
+                }
+                case 'OL': {
+                    return Array.from(node.children)
+                        .map((li, idx) => `${idx + 1}. ${serialize(li).trim()}`)
+                        .join('\n') + '\n\n';
+                }
+                case 'LI':
+                    return `${listPrefix || '- '}${content}\n`;
+                case 'IMG': {
+                    const src = node.getAttribute('src') || '';
+                    const alt = node.getAttribute('alt') || 'image';
+                    return src ? `![${alt}](${src})` : '';
+                }
+                default:
+                    return content;
+            }
+        };
+
+        return serialize(doc.body).trim();
+    };
+
     const postsRef = useMemo(() => {
         if (!db) return null;
         return collection(db, 'posts');
@@ -137,6 +206,39 @@ export default function PostsList() {
         applyFormatting('[', '](https://example.com)');
     };
 
+    const handleImage = () => {
+        const url = typeof window !== 'undefined' ? window.prompt('Image URL (https://...)') : '';
+        if (!url) return;
+        const alt = typeof window !== 'undefined' ? window.prompt('Alt text', 'Image') : 'Image';
+        applyFormatting(`![${alt || 'Image'}](${url})`, '');
+    };
+
+    useEffect(() => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const handlePaste = (event: ClipboardEvent) => {
+            if (!event.clipboardData) return;
+            const html = event.clipboardData.getData('text/html');
+            if (!html) return;
+            event.preventDefault();
+            const markdown = htmlToMarkdown(html);
+            if (markdown) {
+                const { selectionStart, selectionEnd, value } = textarea;
+                const nextValue = value.slice(0, selectionStart) + markdown + value.slice(selectionEnd);
+                setEditBody(nextValue);
+                const nextPos = selectionStart + markdown.length;
+                requestAnimationFrame(() => {
+                    textarea.focus();
+                    textarea.setSelectionRange(nextPos, nextPos);
+                });
+            }
+        };
+
+        textarea.addEventListener('paste', handlePaste);
+        return () => textarea.removeEventListener('paste', handlePaste);
+    }, []);
+
     if (!firebaseReady || !db) {
         return (
             <div className="card space-y-3">
@@ -225,6 +327,13 @@ export default function PostsList() {
                                     >
                                         Emoji
                                     </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
+                                        onClick={handleImage}
+                                    >
+                                        Image
+                                    </button>
                                 </div>
                                 <textarea
                                     rows={6}
@@ -284,7 +393,7 @@ export default function PostsList() {
                                     )}
                                 </div>
                                 <div
-                                    className="prose prose-invert prose-lg max-w-3xl prose-headings:text-white prose-strong:text-white prose-em:text-gray-100 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-li:text-gray-200 prose-p:text-gray-200"
+                                    className="prose prose-invert prose-lg max-w-3xl prose-headings:text-white prose-strong:text-white prose-em:text-gray-100 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-li:text-gray-200 prose-p:text-gray-200 prose-img:rounded-xl prose-img:border prose-img:border-gray-800 prose-img:mx-auto prose-img:max-h-[480px]"
                                     dangerouslySetInnerHTML={{ __html: marked.parse(post.body || '') }}
                                 />
                             </>
