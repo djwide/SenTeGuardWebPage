@@ -231,7 +231,7 @@ export default function PostsList() {
                                     value={editBody}
                                     onChange={(e) => setEditBody(e.target.value)}
                                     ref={textareaRef}
-                                    className="w-full rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
+                                    className="w-full max-w-3xl rounded-lg border border-gray-800 bg-neutral-900 px-3 py-2 text-white focus:border-primary focus:outline-none"
                                 ></textarea>
                                 <div className="flex flex-wrap gap-3">
                                     <button
@@ -260,7 +260,8 @@ export default function PostsList() {
                                 <h2 className="text-2xl text-white">{post.title}</h2>
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                     <p className="text-sm text-gray-500">
-                                        By {post.authorEmail || 'Team'} {formatDate(post.createdAt) ? `· ${formatDate(post.createdAt)}` : ''}
+                                        By {admin ? 'David' : post.authorEmail ? post.authorEmail.split('@')[0] : 'Team'}{' '}
+                                        {formatDate(post.createdAt) ? `· ${formatDate(post.createdAt)}` : ''}
                                     </p>
                                     {admin && (
                                         <div className="flex gap-2">
@@ -283,7 +284,7 @@ export default function PostsList() {
                                     )}
                                 </div>
                                 <div
-                                    className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-strong:text-white prose-em:text-gray-100 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-li:text-gray-200 prose-p:text-gray-200"
+                                    className="prose prose-invert prose-lg max-w-3xl prose-headings:text-white prose-strong:text-white prose-em:text-gray-100 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-li:text-gray-200 prose-p:text-gray-200"
                                     dangerouslySetInnerHTML={{ __html: marked.parse(post.body || '') }}
                                 />
                             </>
