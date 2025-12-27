@@ -265,19 +265,35 @@ export default function PostsList() {
     return (
         <div className="space-y-10">
             {posts.map((post) => {
-                const markedAny: any = marked as any;
-                const slugger = new markedAny.Slugger();
-                const tocTokens = marked.lexer(post.body || '').filter(
+                const slugCounts = new Map<string, number>();
+                const slugify = (text: string) => {
+                    const base = text
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-');
+                    const count = slugCounts.get(base) ?? 0;
+                    slugCounts.set(base, count + 1);
+                    return count ? `${base}-${count}` : base;
+                };
+
+                const headingTokens = marked.lexer(post.body || '').filter(
                     (t) => t.type === 'heading' && (t as any).depth <= 3
                 ) as { depth: number; text: string }[];
-                const toc = tocTokens.map((t) => ({
+                const toc = headingTokens.map((t) => ({
                     depth: t.depth,
                     text: t.text,
-                    id: slugger.slug(t.text)
+                    id: slugify(t.text)
                 }));
 
-                markedAny.use?.({ slugger });
-                const html = marked.parse(post.body || '');
+                const renderer: any = new (marked as any).Renderer();
+                renderer.heading = (text: string, level: number, raw: string) => {
+                    const id = slugify(raw || text);
+                    return `<h${level} id="${id}">${text}</h${level}>`;
+                };
+
+                const html = (marked as any).parser(marked.lexer(post.body || ''), { renderer });
 
                 return (
                     <article key={post.id} className="space-y-6">

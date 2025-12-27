@@ -7,9 +7,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="space-y-3 text-center">
             <p class="text-sm uppercase tracking-[0.3em] text-gray-500">Email List</p>
             <h1>Stay ahead on cognitive security</h1>
-            <p class="text-gray-300">
-                Subscribe for product updates, research notes, and launch announcements. We respect your inbox.
-            </p>
+            <p class="text-gray-300">Subscribe for product updates, research notes, and launch announcements. We respect your inbox.</p>
         </div>
 
         <div class="card space-y-4">
@@ -36,9 +34,9 @@ import Layout from '../layouts/Layout.astro';
     </section>
 
     <script>
-        const pageForm = document.getElementById('page-subscribe-form');
-        const pageSubmit = document.getElementById('page-subscribe-submit');
-        const pageMsg = document.getElementById('page-subscribe-message');
+        const pageForm = document.getElementById('page-subscribe-form') as HTMLFormElement | null;
+        const pageSubmit = document.getElementById('page-subscribe-submit') as HTMLButtonElement | null;
+        const pageMsg = document.getElementById('page-subscribe-message') as HTMLParagraphElement | null;
 
         pageForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -80,4 +78,3 @@ import Layout from '../layouts/Layout.astro';
         });
     </script>
 </Layout>
-
