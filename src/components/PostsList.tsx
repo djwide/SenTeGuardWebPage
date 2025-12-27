@@ -266,7 +266,8 @@ export default function PostsList() {
         <div className="space-y-10">
             {posts.map((post) => {
                 const slugCounts = new Map<string, number>();
-                const slugify = (text: string) => {
+                const slugify = (value: any) => {
+                    const text = typeof value === 'string' ? value : String(value ?? '').toString();
                     const base = text
                         .toLowerCase()
                         .trim()
@@ -280,16 +281,17 @@ export default function PostsList() {
 
                 const headingTokens = marked.lexer(post.body || '').filter(
                     (t) => t.type === 'heading' && (t as any).depth <= 3
-                ) as { depth: number; text: string }[];
+                ) as { depth: number; text?: string }[];
                 const toc = headingTokens.map((t) => ({
                     depth: t.depth,
-                    text: t.text,
-                    id: slugify(t.text)
+                    text: t.text ?? '',
+                    id: slugify(t.text ?? '')
                 }));
 
                 const renderer: any = new (marked as any).Renderer();
-                renderer.heading = (text: string, level: number, raw: string) => {
-                    const id = slugify(raw || text);
+                renderer.heading = (text: string, level: number, raw?: string) => {
+                    const headingText = raw ?? text ?? '';
+                    const id = slugify(headingText);
                     return `<h${level} id="${id}">${text}</h${level}>`;
                 };
 
