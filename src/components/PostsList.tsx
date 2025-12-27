@@ -15,6 +15,7 @@ import { auth, firebaseReady } from '../lib/firebaseClient';
 import { db } from '../lib/firestoreClient';
 import { isAdmin } from '../utils/auth';
 import CommentSection from './CommentSection';
+import { marked } from 'marked';
 
 type Post = {
     id: string;
@@ -207,7 +208,10 @@ export default function PostsList() {
                                         </div>
                                     )}
                                 </div>
-                                <p className="whitespace-pre-wrap text-gray-200">{post.body}</p>
+                                <div
+                                    className="prose prose-invert max-w-none prose-p:text-gray-200 prose-strong:text-white prose-em:text-gray-100"
+                                    dangerouslySetInnerHTML={{ __html: marked.parse(post.body || '') }}
+                                />
                             </>
                         )}
                         {error && <p className="text-sm text-red-400">{error}</p>}
