@@ -264,152 +264,203 @@ export default function PostsList() {
 
     return (
         <div className="space-y-10">
-            {posts.map((post) => (
-                <article key={post.id} className="space-y-5">
-                    <div className="card space-y-3">
-                        <p className="text-sm uppercase tracking-[0.3em] text-primary">Post</p>
-                        {editingId === post.id ? (
-                            <div className="space-y-3">
-                                <input
-                                    type="text"
-                                    value={editTitle}
-                                    onChange={(e) => setEditTitle(e.target.value)}
-                                    className="w-full rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
-                                />
-                                <div className="flex flex-wrap gap-2 text-xs">
-                                    <span className="text-gray-400">Formatting:</span>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={() => applyFormatting('**')}
-                                    >
-                                        Bold
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={() => applyFormatting('*')}
-                                    >
-                                        Italic
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={() => applyFormatting('## ')}
-                                    >
-                                        H2
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={() => applyFormatting('### ')}
-                                    >
-                                        H3
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={() => applyFormatting('- ')}
-                                    >
-                                        Bullet
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={() => applyFormatting('1. ')}
-                                    >
-                                        Numbered
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={handleLink}
-                                    >
-                                        Link
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={() => applyFormatting('😊')}
-                                    >
-                                        Emoji
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline px-3 py-1"
-                                        onClick={handleImage}
-                                    >
-                                        Image
-                                    </button>
+            {posts.map((post) => {
+                const slugCounts = new Map<string, number>();
+                const slugify = (text: string) => {
+                    const base = text
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-');
+                    const count = slugCounts.get(base) ?? 0;
+                    slugCounts.set(base, count + 1);
+                    return count ? `${base}-${count}` : base;
+                };
+
+                const tocTokens = marked.lexer(post.body || '').filter(
+                    (t) => t.type === 'heading' && (t as any).depth <= 3
+                ) as { depth: number; text: string }[];
+                const toc = tocTokens.map((t) => ({
+                    depth: t.depth,
+                    text: t.text,
+                    id: slugify(t.text)
+                }));
+
+                const renderer = {
+                    heading(text: string, level: number) {
+                        const id = slugify(text);
+                        return `<h${level} id="${id}">${text}</h${level}>`;
+                    }
+                } as any;
+
+                const html = marked.parse(post.body || '', { renderer });
+
+                return (
+                    <article key={post.id} className="space-y-6">
+                        <div className="card space-y-4 max-w-4xl mx-auto">
+                            <p className="text-sm uppercase tracking-[0.3em] text-primary">Post</p>
+                            {editingId === post.id ? (
+                                <div className="space-y-3">
+                                    <input
+                                        type="text"
+                                        value={editTitle}
+                                        onChange={(e) => setEditTitle(e.target.value)}
+                                        className="w-full max-w-3xl rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
+                                    />
+                                    <div className="flex flex-wrap gap-2 text-xs">
+                                        <span className="text-gray-400">Formatting:</span>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => applyFormatting('**')}
+                                        >
+                                            Bold
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => applyFormatting('*')}
+                                        >
+                                            Italic
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => applyFormatting('## ')}
+                                        >
+                                            H2
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => applyFormatting('### ')}
+                                        >
+                                            H3
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => applyFormatting('- ')}
+                                        >
+                                            Bullet
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => applyFormatting('1. ')}
+                                        >
+                                            Numbered
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={handleLink}
+                                        >
+                                            Link
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => applyFormatting('😊')}
+                                        >
+                                            Emoji
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={handleImage}
+                                        >
+                                            Image
+                                        </button>
+                                    </div>
+                                    <textarea
+                                        rows={10}
+                                        value={editBody}
+                                        onChange={(e) => setEditBody(e.target.value)}
+                                        ref={textareaRef}
+                                        className="w-full max-w-3xl rounded-lg border border-gray-800 bg-neutral-900 px-3 py-2 text-white leading-7 focus:border-primary focus:outline-none"
+                                    ></textarea>
+                                    <div className="flex flex-wrap gap-3">
+                                        <button
+                                            type="button"
+                                            className="btn"
+                                            onClick={() => handleSave(post.id)}
+                                            disabled={savingId === post.id}
+                                        >
+                                            {savingId === post.id ? 'Saving...' : 'Save changes'}
+                                        </button>
+                                        <button type="button" className="btn btn-outline" onClick={cancelEdit}>
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline"
+                                            onClick={() => handleDeletePost(post.id)}
+                                            disabled={deletingId === post.id}
+                                        >
+                                            {deletingId === post.id ? 'Deleting...' : 'Delete post'}
+                                        </button>
+                                    </div>
                                 </div>
-                                <textarea
-                                    rows={6}
-                                    value={editBody}
-                                    onChange={(e) => setEditBody(e.target.value)}
-                                    ref={textareaRef}
-                                    className="w-full max-w-3xl rounded-lg border border-gray-800 bg-neutral-900 px-3 py-2 text-white focus:border-primary focus:outline-none"
-                                ></textarea>
-                                <div className="flex flex-wrap gap-3">
-                                    <button
-                                        type="button"
-                                        className="btn"
-                                        onClick={() => handleSave(post.id)}
-                                        disabled={savingId === post.id}
-                                    >
-                                        {savingId === post.id ? 'Saving...' : 'Save changes'}
-                                    </button>
-                                    <button type="button" className="btn btn-outline" onClick={cancelEdit}>
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline"
-                                        onClick={() => handleDeletePost(post.id)}
-                                        disabled={deletingId === post.id}
-                                    >
-                                        {deletingId === post.id ? 'Deleting...' : 'Delete post'}
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <>
-                                <h2 className="text-2xl text-white">{post.title}</h2>
-                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                    <p className="text-sm text-gray-500">
-                                        By {admin ? 'David' : post.authorEmail ? post.authorEmail.split('@')[0] : 'Team'}{' '}
-                                        {formatDate(post.createdAt) ? `· ${formatDate(post.createdAt)}` : ''}
-                                    </p>
-                                    {admin && (
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline"
-                                                onClick={() => startEdit(post)}
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline"
-                                                onClick={() => handleDeletePost(post.id)}
-                                                disabled={deletingId === post.id}
-                                            >
-                                                {deletingId === post.id ? 'Deleting...' : 'Delete'}
-                                            </button>
+                            ) : (
+                                <>
+                                    <div className="space-y-2">
+                                        <h2 className="text-3xl font-semibold text-white">{post.title}</h2>
+                                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                                            <span>
+                                                By {admin ? 'David' : post.authorEmail ? post.authorEmail.split('@')[0] : 'Team'}
+                                            </span>
+                                            {formatDate(post.createdAt) && <span>· {formatDate(post.createdAt)}</span>}
+                                        </div>
+                                        {admin && (
+                                            <div className="flex gap-2 pt-2">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline"
+                                                    onClick={() => startEdit(post)}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline"
+                                                    onClick={() => handleDeletePost(post.id)}
+                                                    disabled={deletingId === post.id}
+                                                >
+                                                    {deletingId === post.id ? 'Deleting...' : 'Delete'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {toc.length > 1 && (
+                                        <div className="rounded-xl border border-gray-800 bg-neutral-950/70 p-4 max-w-3xl mx-auto space-y-2">
+                                            <p className="text-xs uppercase tracking-[0.25em] text-gray-500">Contents</p>
+                                            <ul className="space-y-1 text-sm text-gray-300">
+                                                {toc.map((item) => (
+                                                    <li key={item.id} className="ml-[calc((item.depth-1)*12px)]">
+                                                        <a className="hover:underline" href={`#${item.id}`}>
+                                                            {item.text}
+                                                        </a>
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         </div>
                                     )}
-                                </div>
-                                <div
-                                    className="prose prose-invert prose-lg max-w-3xl prose-headings:text-white prose-strong:text-white prose-em:text-gray-100 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-li:text-gray-200 prose-p:text-gray-200 prose-img:rounded-xl prose-img:border prose-img:border-gray-800 prose-img:mx-auto prose-img:max-h-[480px]"
-                                    dangerouslySetInnerHTML={{ __html: marked.parse(post.body || '') }}
-                                />
-                            </>
-                        )}
-                        {error && <p className="text-sm text-red-400">{error}</p>}
-                    </div>
-                    <CommentSection postId={post.id} />
-                </article>
-            ))}
+
+                                    <div
+                                        className="prose prose-invert prose-lg max-w-3xl mx-auto leading-7 prose-headings:text-white prose-strong:text-white prose-em:text-gray-100 prose-a:text-primary prose-a:underline hover:prose-a:opacity-90 prose-li:text-gray-200 prose-p:text-gray-200 prose-pre:bg-neutral-900 prose-pre:text-gray-100 prose-pre:p-4 prose-pre:rounded-xl prose-pre:overflow-x-auto prose-code:font-mono prose-img:rounded-2xl prose-img:border prose-img:border-gray-800 prose-img:mx-auto prose-img:max-h-[480px] prose-figcaption:text-sm prose-figcaption:text-gray-500"
+                                        dangerouslySetInnerHTML={{ __html: html }}
+                                    />
+                                </>
+                            )}
+                            {error && <p className="text-sm text-red-400">{error}</p>}
+                        </div>
+                        <CommentSection postId={post.id} />
+                    </article>
+                );
+            })}
         </div>
     );
 }
