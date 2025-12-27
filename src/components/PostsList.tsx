@@ -316,6 +316,13 @@ export default function PostsList() {
                                     <button
                                         type="button"
                                         className="btn btn-outline px-3 py-1"
+                                        onClick={() => applyFormatting('1. ')}
+                                    >
+                                        Numbered
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
                                         onClick={handleLink}
                                     >
                                         Link
