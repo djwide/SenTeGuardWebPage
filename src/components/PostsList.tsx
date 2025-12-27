@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import {
     collection,
@@ -34,6 +34,7 @@ export default function PostsList() {
     const [editTitle, setEditTitle] = useState('');
     const [editBody, setEditBody] = useState('');
     const [savingId, setSavingId] = useState<string | null>(null);
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
     const postsRef = useMemo(() => {
         if (!db) return null;
@@ -116,6 +117,26 @@ export default function PostsList() {
         }
     };
 
+    const applyFormatting = (before: string, after?: string) => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+        const { selectionStart, selectionEnd, value } = textarea;
+        const selected = value.slice(selectionStart, selectionEnd);
+        const insertAfter = after ?? before;
+        const nextValue =
+            value.slice(0, selectionStart) + before + selected + insertAfter + value.slice(selectionEnd);
+        setEditBody(nextValue);
+        const nextPos = selectionEnd + before.length + insertAfter.length;
+        requestAnimationFrame(() => {
+            textarea.focus();
+            textarea.setSelectionRange(nextPos, nextPos);
+        });
+    };
+
+    const handleLink = () => {
+        applyFormatting('[', '](https://example.com)');
+    };
+
     if (!firebaseReady || !db) {
         return (
             <div className="card space-y-3">
@@ -144,7 +165,7 @@ export default function PostsList() {
             {posts.map((post) => (
                 <article key={post.id} className="space-y-5">
                     <div className="card space-y-3">
-                        <p className="text-sm uppercase tracking-[0.3em] text-gray-500">Post</p>
+                        <p className="text-sm uppercase tracking-[0.3em] text-primary">Post</p>
                         {editingId === post.id ? (
                             <div className="space-y-3">
                                 <input
@@ -153,10 +174,63 @@ export default function PostsList() {
                                     onChange={(e) => setEditTitle(e.target.value)}
                                     className="w-full rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
                                 />
+                                <div className="flex flex-wrap gap-2 text-xs">
+                                    <span className="text-gray-400">Formatting:</span>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
+                                        onClick={() => applyFormatting('**')}
+                                    >
+                                        Bold
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
+                                        onClick={() => applyFormatting('*')}
+                                    >
+                                        Italic
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
+                                        onClick={() => applyFormatting('## ')}
+                                    >
+                                        H2
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
+                                        onClick={() => applyFormatting('### ')}
+                                    >
+                                        H3
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
+                                        onClick={() => applyFormatting('- ')}
+                                    >
+                                        Bullet
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
+                                        onClick={handleLink}
+                                    >
+                                        Link
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline px-3 py-1"
+                                        onClick={() => applyFormatting('😊')}
+                                    >
+                                        Emoji
+                                    </button>
+                                </div>
                                 <textarea
                                     rows={6}
                                     value={editBody}
                                     onChange={(e) => setEditBody(e.target.value)}
+                                    ref={textareaRef}
                                     className="w-full rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
                                 ></textarea>
                                 <div className="flex flex-wrap gap-3">
@@ -209,7 +283,7 @@ export default function PostsList() {
                                     )}
                                 </div>
                                 <div
-                                    className="prose prose-invert max-w-none prose-p:text-gray-200 prose-strong:text-white prose-em:text-gray-100"
+                                    className="prose prose-invert prose-lg max-w-none prose-headings:text-white prose-strong:text-white prose-em:text-gray-100 prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-li:text-gray-200 prose-p:text-gray-200"
                                     dangerouslySetInnerHTML={{ __html: marked.parse(post.body || '') }}
                                 />
                             </>
