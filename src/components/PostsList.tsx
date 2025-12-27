@@ -23,6 +23,7 @@ type Post = {
     body: string;
     authorEmail?: string;
     createdAt?: Timestamp;
+    tags?: string[];
 };
 
 export default function PostsList() {
@@ -35,75 +36,7 @@ export default function PostsList() {
     const [editBody, setEditBody] = useState('');
     const [savingId, setSavingId] = useState<string | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-    const htmlToMarkdown = (html: string): string => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        const serialize = (node: Node, listPrefix = ''): string => {
-            if (node.nodeType === Node.TEXT_NODE) {
-                return (node.textContent || '').replace(/\s+/g, ' ');
-            }
-
-            if (!(node instanceof HTMLElement)) {
-                return '';
-            }
-
-            const children = Array.from(node.childNodes).map((child, index) =>
-                serialize(child, node.tagName === 'OL' ? `${index + 1}. ` : listPrefix)
-            );
-            const content = children.join('').trim();
-
-            switch (node.tagName) {
-                case 'STRONG':
-                case 'B':
-                    return content ? `**${content}**` : '';
-                case 'EM':
-                case 'I':
-                    return content ? `*${content}*` : '';
-                case 'CODE':
-                    return content ? '`' + content + '`' : '';
-                case 'A': {
-                    const href = node.getAttribute('href') || '';
-                    return href ? `[${content || href}](${href})` : content;
-                }
-                case 'BR':
-                    return '\n';
-                case 'P':
-                case 'DIV':
-                    return content ? `${content}\n\n` : '\n\n';
-                case 'H1':
-                    return `# ${content}\n\n`;
-                case 'H2':
-                    return `## ${content}\n\n`;
-                case 'H3':
-                    return `### ${content}\n\n`;
-                case 'H4':
-                    return `#### ${content}\n\n`;
-                case 'UL': {
-                    return Array.from(node.children)
-                        .map((li) => `- ${serialize(li).trim()}`)
-                        .join('\n') + '\n\n';
-                }
-                case 'OL': {
-                    return Array.from(node.children)
-                        .map((li, idx) => `${idx + 1}. ${serialize(li).trim()}`)
-                        .join('\n') + '\n\n';
-                }
-                case 'LI':
-                    return `${listPrefix || '- '}${content}\n`;
-                case 'IMG': {
-                    const src = node.getAttribute('src') || '';
-                    const alt = node.getAttribute('alt') || 'image';
-                    return src ? `![${alt}](${src})` : '';
-                }
-                default:
-                    return content;
-            }
-        };
-
-        return serialize(doc.body).trim();
-    };
+    const [editTags, setEditTags] = useState('');
 
     const postsRef = useMemo(() => {
         if (!db) return null;
@@ -155,6 +88,7 @@ export default function PostsList() {
         setEditingId(post.id);
         setEditTitle(post.title);
         setEditBody(post.body);
+        setEditTags((post.tags || []).join(', '));
         setError('');
     };
 
@@ -176,6 +110,7 @@ export default function PostsList() {
             await updateDoc(doc(postsRef, postId), {
                 title: editTitle.trim(),
                 body: editBody.trim(),
+                tags: toTagArray(editTags),
                 updatedAt: serverTimestamp()
             });
             cancelEdit();
@@ -213,31 +148,19 @@ export default function PostsList() {
         applyFormatting(`![${alt || 'Image'}](${url})`, '');
     };
 
-    useEffect(() => {
-        const textarea = textareaRef.current;
-        if (!textarea) return;
+    const toTagArray = (value: string) =>
+        value
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean);
 
-        const handlePaste = (event: ClipboardEvent) => {
-            if (!event.clipboardData) return;
-            const html = event.clipboardData.getData('text/html');
-            if (!html) return;
-            event.preventDefault();
-            const markdown = htmlToMarkdown(html);
-            if (markdown) {
-                const { selectionStart, selectionEnd, value } = textarea;
-                const nextValue = value.slice(0, selectionStart) + markdown + value.slice(selectionEnd);
-                setEditBody(nextValue);
-                const nextPos = selectionStart + markdown.length;
-                requestAnimationFrame(() => {
-                    textarea.focus();
-                    textarea.setSelectionRange(nextPos, nextPos);
-                });
-            }
-        };
-
-        textarea.addEventListener('paste', handlePaste);
-        return () => textarea.removeEventListener('paste', handlePaste);
-    }, []);
+    const slugify = (value: string) =>
+        value
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
 
     if (!firebaseReady || !db) {
         return (
@@ -266,36 +189,30 @@ export default function PostsList() {
         <div className="space-y-10">
             {posts.map((post) => {
                 const slugCounts = new Map<string, number>();
-                const slugify = (value: any) => {
-                    const text = typeof value === 'string' ? value : String(value ?? '').toString();
-                    const base = text
-                        .toLowerCase()
-                        .trim()
-                        .replace(/[^\w\s-]/g, '')
-                        .replace(/\s+/g, '-')
-                        .replace(/-+/g, '-');
+                const uniqueSlug = (text: string) => {
+                    const base = slugify(text);
                     const count = slugCounts.get(base) ?? 0;
                     slugCounts.set(base, count + 1);
                     return count ? `${base}-${count}` : base;
                 };
 
-                const headingTokens = marked.lexer(post.body || '').filter(
+                const tokens = marked.lexer(post.body || '');
+                const headingTokens = tokens.filter(
                     (t) => t.type === 'heading' && (t as any).depth <= 3
                 ) as { depth: number; text?: string }[];
                 const toc = headingTokens.map((t) => ({
                     depth: t.depth,
                     text: t.text ?? '',
-                    id: slugify(t.text ?? '')
+                    id: uniqueSlug(t.text ?? '')
                 }));
 
                 const renderer: any = new (marked as any).Renderer();
                 renderer.heading = (text: string, level: number, raw?: string) => {
                     const headingText = raw ?? text ?? '';
-                    const id = slugify(headingText);
+                    const id = uniqueSlug(headingText);
                     return `<h${level} id="${id}">${text}</h${level}>`;
                 };
-
-                const html = (marked as any).parser(marked.lexer(post.body || ''), { renderer });
+                const html = (marked as any).parser(tokens, { renderer });
 
                 return (
                     <article key={post.id} className="space-y-6">
@@ -307,6 +224,13 @@ export default function PostsList() {
                                         type="text"
                                         value={editTitle}
                                         onChange={(e) => setEditTitle(e.target.value)}
+                                        className="w-full max-w-3xl rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={editTags}
+                                        onChange={(e) => setEditTags(e.target.value)}
+                                        placeholder="Tags (comma separated)"
                                         className="w-full max-w-3xl rounded-lg border border-gray-800 bg-black px-3 py-2 text-white focus:border-primary focus:outline-none"
                                     />
                                     <div className="flex flex-wrap gap-2 text-xs">
@@ -413,6 +337,18 @@ export default function PostsList() {
                                                 By {admin ? 'David' : post.authorEmail ? post.authorEmail.split('@')[0] : 'Team'}
                                             </span>
                                             {formatDate(post.createdAt) && <span>· {formatDate(post.createdAt)}</span>}
+                                            {post.tags && post.tags.length > 0 && (
+                                                <div className="flex flex-wrap gap-2">
+                                                    {post.tags.map((tag) => (
+                                                        <span
+                                                            key={tag}
+                                                            className="rounded-full border border-gray-800 bg-neutral-900 px-2 py-1 text-xs text-gray-200"
+                                                        >
+                                                            {tag}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                         {admin && (
                                             <div className="flex gap-2 pt-2">

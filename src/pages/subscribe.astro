@@ -34,19 +34,19 @@ import Layout from '../layouts/Layout.astro';
     </section>
 
     <script>
-        const pageForm = document.getElementById('page-subscribe-form') as HTMLFormElement | null;
-        const pageSubmit = document.getElementById('page-subscribe-submit') as HTMLButtonElement | null;
-        const pageMsg = document.getElementById('page-subscribe-message') as HTMLParagraphElement | null;
+        const pageForm = document.getElementById('page-subscribe-form');
+        const pageSubmit = document.getElementById('page-subscribe-submit');
+        const pageMsg = document.getElementById('page-subscribe-message');
 
         pageForm?.addEventListener('submit', async (event) => {
             event.preventDefault();
             if (!pageForm || !pageSubmit || !pageMsg) return;
 
-            const formData = new FormData(pageForm);
+            const formData = new FormData(pageForm as HTMLFormElement);
             const email = formData.get('email');
             if (!email) return;
 
-            pageSubmit.disabled = true;
+            (pageSubmit as HTMLButtonElement).disabled = true;
             pageMsg.textContent = 'Submitting...';
             pageMsg.classList.remove('text-red-400', 'text-green-400');
             pageMsg.classList.add('text-gray-400');
@@ -62,7 +62,7 @@ import Layout from '../layouts/Layout.astro';
                     pageMsg.textContent = 'Thanks! You are subscribed.';
                     pageMsg.classList.remove('text-gray-400', 'text-red-400');
                     pageMsg.classList.add('text-green-400');
-                    pageForm.reset();
+                    (pageForm as HTMLFormElement).reset();
                 } else {
                     pageMsg.textContent = data.error || 'Unable to subscribe. Please try again.';
                     pageMsg.classList.remove('text-gray-400', 'text-green-400');
@@ -73,7 +73,7 @@ import Layout from '../layouts/Layout.astro';
                 pageMsg.classList.remove('text-gray-400', 'text-green-400');
                 pageMsg.classList.add('text-red-400');
             } finally {
-                pageSubmit.disabled = false;
+                (pageSubmit as HTMLButtonElement).disabled = false;
             }
         });
     </script>
