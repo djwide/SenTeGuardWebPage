@@ -39,6 +39,7 @@ export default function PostsList() {
     const [savingId, setSavingId] = useState<string | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [editTags, setEditTags] = useState('');
+    const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
 
     const postsRef = useMemo(() => {
         if (!db) return null;
@@ -156,6 +157,29 @@ export default function PostsList() {
             .map((t) => t.trim())
             .filter(Boolean);
 
+    const makeShareUrl = (postId: string) =>
+        typeof window !== 'undefined' ? `${window.location.origin}/blog/#post-${postId}` : `/blog/#post-${postId}`;
+
+    const handleCopyLink = async (postId: string) => {
+        const url = makeShareUrl(postId);
+        try {
+            if (navigator?.clipboard?.writeText) {
+                await navigator.clipboard.writeText(url);
+                setCopiedPostId(postId);
+            } else {
+                throw new Error('Clipboard unavailable');
+            }
+        } catch (err) {
+            console.error('Copy failed', err);
+            setError('Unable to copy link.');
+        }
+    };
+
+    const handleShareWindow = (shareUrl: string) => {
+        if (typeof window === 'undefined') return;
+        window.open(shareUrl, '_blank', 'noopener,noreferrer');
+    };
+
     if (!firebaseReady || !db) {
         return (
             <div className="card space-y-3">
@@ -185,9 +209,14 @@ export default function PostsList() {
                 const html = marked.parse(post.body || '') as string;
                 const previewHtml = marked.parse(editBody || '') as string;
 
+                const shareUrl = makeShareUrl(post.id);
+                const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+                const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`;
+                const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+
                 return (
-                    <article key={post.id} className="space-y-6">
-                        <div className="card space-y-4 max-w-4xl mx-auto">
+                    <article key={post.id} id={`post-${post.id}`} className="space-y-6">
+                        <div className="card space-y-4 max-w-4xl mx-auto bg-neutral-950 border border-gray-800">
                             <p className="text-sm uppercase tracking-[0.3em] text-primary">Post</p>
                             {editingId === post.id ? (
                                 <div className="space-y-4">
@@ -350,6 +379,38 @@ export default function PostsList() {
                                         className="prose prose-invert prose-lg max-w-3xl mx-auto leading-7 prose-headings:text-white prose-strong:text-white prose-em:text-gray-100 prose-a:text-primary prose-a:underline hover:prose-a:opacity-90 prose-li:text-gray-200 prose-p:text-gray-200 prose-pre:bg-neutral-900 prose-pre:text-gray-100 prose-pre:p-4 prose-pre:rounded-xl prose-pre:overflow-x-auto prose-code:font-mono prose-img:rounded-2xl prose-img:border prose-img:border-gray-800 prose-img:mx-auto prose-img:max-h-[480px] prose-figcaption:text-sm prose-figcaption:text-gray-500"
                                         dangerouslySetInnerHTML={{ __html: html }}
                                     />
+                                    <div className="flex flex-wrap gap-2 pt-4 items-center text-sm">
+                                        <span className="text-gray-400">Share:</span>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => handleShareWindow(linkedInUrl)}
+                                        >
+                                            LinkedIn
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => handleShareWindow(twitterUrl)}
+                                        >
+                                            X / Twitter
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => handleShareWindow(facebookUrl)}
+                                        >
+                                            Facebook
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline px-3 py-1"
+                                            onClick={() => handleCopyLink(post.id)}
+                                        >
+                                            Copy link
+                                        </button>
+                                        {copiedPostId === post.id && <span className="text-xs text-green-400">Link copied</span>}
+                                    </div>
                                 </>
                             )}
                             {error && <p className="text-sm text-red-400">{error}</p>}
